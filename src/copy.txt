@@ -1,63 +1,50 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.Arrays;
 
 public class FileSystemSimulatorGUI extends JFrame {
-    private JTextArea terminalArea;
+    private JTextArea commandOutput;
+    private JTextField commandInput;
     private java.io.File currentDirectory;  // Using java.io.File here
 
     public FileSystemSimulatorGUI() {
         currentDirectory = new java.io.File(System.getProperty("user.home"));
 
-        setTitle("Group E Command Prompt");
+        setTitle("Real File System Simulator");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        terminalArea = new JTextArea();
-        terminalArea.setEditable(true);
-        terminalArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        terminalArea.setBackground(Color.BLACK);
-        terminalArea.setForeground(Color.WHITE);
-        terminalArea.setCaretColor(Color.WHITE);
-        JScrollPane scrollPane = new JScrollPane(terminalArea);
+        commandOutput = new JTextArea();
+        commandOutput.setEditable(false);
+        commandOutput.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        JScrollPane scrollPane = new JScrollPane(commandOutput);
         add(scrollPane, BorderLayout.CENTER);
 
-        terminalArea.setText("Welcome to the Group E File System Simulator!\n"
-                             + "Current Directory: " + currentDirectory.getAbsolutePath() + "\n"
-                             + "Type 'help' for a list of commands.\n");
-        
-        terminalArea.setCaretPosition(terminalArea.getDocument().getLength());
+        commandInput = new JTextField();
+        commandInput.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        add(commandInput, BorderLayout.SOUTH);
 
-        terminalArea.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent e) {
-                // Prevent deleting the '>' prompt
-                String text = terminalArea.getText();
-                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE || e.getKeyCode() == KeyEvent.VK_DELETE) {
-                    // Check if last character is the prompt ">"
-                    int caretPos = terminalArea.getCaretPosition();
-                    if (caretPos > 2 && text.substring(caretPos - 2, caretPos).equals("> ")) {
-                        e.consume();  // Prevent delete if it's the '>' prompt
-                    }
-                }
+        commandInput.requestFocusInWindow();
 
-                // Handle Enter key press (process the command)
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    String command = text.substring(text.lastIndexOf(">") + 1).trim();
-                    if (!command.isBlank()) {
-                        processCommand(command);
-                    }
-                    terminalArea.append("\n> ");
-                    e.consume();  // Prevents adding a new line after pressing Enter
+        commandInput.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String command = commandInput.getText();
+                if (!command.isBlank()) {
+                    processCommand(command);
+                    commandInput.setText("");
                 }
             }
         });
 
-        terminalArea.append("> ");  // Initial prompt
-
         setVisible(true);
+        appendOutput("Welcome to the Real File System Simulator!");
+        appendOutput("Current Directory: " + currentDirectory.getAbsolutePath());
+        appendOutput("Type 'help' for a list of commands.");
     }
 
     private void processCommand(String command) {
@@ -221,8 +208,8 @@ public class FileSystemSimulatorGUI extends JFrame {
     }
 
     private void appendOutput(String message) {
-        terminalArea.append("\n" + message);
-        terminalArea.setCaretPosition(terminalArea.getDocument().getLength());
+        commandOutput.append(message + "\n");
+        commandOutput.setCaretPosition(commandOutput.getDocument().getLength());
     }
 
     public static void main(String[] args) {
